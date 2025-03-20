@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .loading.active {
+            display: block;
+        }
+        .error {
+            color: red;
+            display: none;
+        }
+        .error.active {
+            display: block;
+        }
+        .category-header {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #0d6efd;
+        }
+        .info-text {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0d6efd;
+        }
+        .form-control::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+        .default-value {
+            color: #999;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">House Price Prediction</h1>
+        
+        <div class="info-text">
+            <p class="mb-0"><strong>Note:</strong> All fields are optional. Any blank fields will be automatically filled with typical values from our dataset to ensure accurate predictions.</p>
+        </div>
+
+        <form id="predictionForm" class="needs-validation">
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-12">
+                    <div class="category-header">
+                        <h4 class="mb-0">Basic Information</h4>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="GrLivArea" class="form-label">Above Ground Living Area (sq ft)</label>
+                        <input type="number" class="form-control" id="GrLivArea" name="GrLivArea" min="0" placeholder="Default: 1500">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="TotalBsmtSF" class="form-label">Total Basement Area (sq ft)</label>
+                        <input type="number" class="form-control" id="TotalBsmtSF" name="TotalBsmtSF" min="0" placeholder="Default: 1000">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="LotArea" class="form-label">Lot Area (sq ft)</label>
+                        <input type="number" class="form-control" id="LotArea" name="LotArea" min="0" placeholder="Default: 8000">
+                    </div>
+                </div>
+
+                <!-- Quality and Condition -->
+                <div class="col-12 mt-4">
+                    <div class="category-header">
+                        <h4 class="mb-0">Quality and Condition</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="OverallQual" class="form-label">Overall Quality (1-10)</label>
+                        <input type="number" class="form-control" id="OverallQual" name="OverallQual" min="1" max="10" placeholder="Default: 5">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="OverallCond" class="form-label">Overall Condition (1-10)</label>
+                        <input type="number" class="form-control" id="OverallCond" name="OverallCond" min="1" max="10" placeholder="Default: 5">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="ExterQual" class="form-label">Exterior Quality</label>
+                        <select class="form-control" id="ExterQual" name="ExterQual">
+                            <option value="">Select...</option>
+                            <option value="Ex">Excellent</option>
+                            <option value="Gd">Good</option>
+                            <option value="TA">Average/Typical</option>
+                            <option value="Fa">Fair</option>
+                            <option value="Po">Poor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="ExterCond" class="form-label">Exterior Condition</label>
+                        <select class="form-control" id="ExterCond" name="ExterCond">
+                            <option value="">Select...</option>
+                            <option value="Ex">Excellent</option>
+                            <option value="Gd">Good</option>
+                            <option value="TA">Average/Typical</option>
+                            <option value="Fa">Fair</option>
+                            <option value="Po">Poor</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Rooms and Bathrooms -->
+                <div class="col-12 mt-4">
+                    <div class="category-header">
+                        <h4 class="mb-0">Rooms and Bathrooms</h4>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="TotRmsAbvGrd" class="form-label">Total Rooms Above Ground</label>
+                        <input type="number" class="form-control" id="TotRmsAbvGrd" name="TotRmsAbvGrd" min="0" placeholder="Default: 6">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="BedroomAbvGr" class="form-label">Bedrooms Above Ground</label>
+                        <input type="number" class="form-control" id="BedroomAbvGr" name="BedroomAbvGr" min="0" placeholder="Default: 3">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="FullBath" class="form-label">Full Bathrooms</label>
+                        <input type="number" class="form-control" id="FullBath" name="FullBath" min="0" placeholder="Default: 2">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="HalfBath" class="form-label">Half Bathrooms</label>
+                        <input type="number" class="form-control" id="HalfBath" name="HalfBath" min="0" placeholder="Default: 1">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="BsmtFullBath" class="form-label">Basement Full Baths</label>
+                        <input type="number" class="form-control" id="BsmtFullBath" name="BsmtFullBath" min="0" placeholder="Default: 0">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label for="BsmtHalfBath" class="form-label">Basement Half Baths</label>
+                        <input type="number" class="form-control" id="BsmtHalfBath" name="BsmtHalfBath" min="0" placeholder="Default: 0">
+                    </div>
+                </div>
+
+                <!-- Garage Information -->
+                <div class="col-12 mt-4">
+                    <div class="category-header">
+                        <h4 class="mb-0">Garage Information</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="GarageCars" class="form-label">Garage Capacity (cars)</label>
+                        <input type="number" class="form-control" id="GarageCars" name="GarageCars" min="0" placeholder="Default: 2">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="GarageArea" class="form-label">Garage Area (sq ft)</label>
+                        <input type="number" class="form-control" id="GarageArea" name="GarageArea" min="0" placeholder="Default: 400">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="GarageType" class="form-label">Garage Type</label>
+                        <select class="form-control" id="GarageType" name="GarageType">
+                            <option value="">Select...</option>
+                            <option value="Attchd">Attached</option>
+                            <option value="Detchd">Detached</option>
+                            <option value="BuiltIn">Built-In</option>
+                            <option value="CarPort">Car Port</option>
+                            <option value="NA">None</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="GarageYrBlt" class="form-label">Garage Year Built</label>
+                        <input type="number" class="form-control" id="GarageYrBlt" name="GarageYrBlt" min="1800" max="2024" placeholder="Default: 1970">
+                    </div>
+                </div>
+
+                <!-- Additional Features -->
+                <div class="col-12 mt-4">
+                    <div class="category-header">
+                        <h4 class="mb-0">Additional Features</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="YearBuilt" class="form-label">Year Built</label>
+                        <input type="number" class="form-control" id="YearBuilt" name="YearBuilt" min="1800" max="2024" placeholder="Default: 1970">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="YearRemodAdd" class="form-label">Year Remodeled</label>
+                        <input type="number" class="form-control" id="YearRemodAdd" name="YearRemodAdd" min="1800" max="2024" placeholder="Default: 1970">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="Fireplaces" class="form-label">Number of Fireplaces</label>
+                        <input type="number" class="form-control" id="Fireplaces" name="Fireplaces" min="0" placeholder="Default: 0">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="PoolArea" class="form-label">Pool Area (sq ft)</label>
+                        <input type="number" class="form-control" id="PoolArea" name="PoolArea" min="0" placeholder="Default: 0">
+                    </div>
+                </div>
+
+                <!-- Hidden inputs for remaining features -->
+                <input type="hidden" name="Id" value="1">
+                <input type="hidden" name="FirstFlrSF" value="1000">
+                <input type="hidden" name="SecondFlrSF" value="500">
+                <input type="hidden" name="ThreeSsnPorch" value="0">
+                <input type="hidden" name="MSSubClass" value="60">
+                <input type="hidden" name="LotFrontage" value="60">
+                <input type="hidden" name="Street" value="Pave">
+                <input type="hidden" name="Alley" value="NA">
+                <input type="hidden" name="LotShape" value="Reg">
+                <input type="hidden" name="LandContour" value="Lvl">
+                <input type="hidden" name="Utilities" value="AllPub">
+                <input type="hidden" name="LotConfig" value="Inside">
+                <input type="hidden" name="LandSlope" value="Gtl">
+                <input type="hidden" name="Neighborhood" value="NAmes">
+                <input type="hidden" name="Condition1" value="Norm">
+                <input type="hidden" name="Condition2" value="Norm">
+                <input type="hidden" name="BldgType" value="1Fam">
+                <input type="hidden" name="HouseStyle" value="2Story">
+                <input type="hidden" name="RoofStyle" value="Gable">
+                <input type="hidden" name="RoofMatl" value="CompShg">
+                <input type="hidden" name="Exterior1st" value="VinylSd">
+                <input type="hidden" name="Exterior2nd" value="VinylSd">
+                <input type="hidden" name="MasVnrType" value="None">
+                <input type="hidden" name="MasVnrArea" value="0">
+                <input type="hidden" name="Foundation" value="PConc">
+                <input type="hidden" name="BsmtQual" value="TA">
+                <input type="hidden" name="BsmtCond" value="TA">
+                <input type="hidden" name="BsmtExposure" value="No">
+                <input type="hidden" name="BsmtFinType1" value="Unf">
+                <input type="hidden" name="BsmtFinType2" value="Unf">
+                <input type="hidden" name="BsmtFinSF1" value="0">
+                <input type="hidden" name="BsmtFinSF2" value="0">
+                <input type="hidden" name="BsmtUnfSF" value="0">
+                <input type="hidden" name="Heating" value="GasA">
+                <input type="hidden" name="HeatingQC" value="TA">
+                <input type="hidden" name="CentralAir" value="Y">
+                <input type="hidden" name="Electrical" value="SBrkr">
+                <input type="hidden" name="LowQualFinSF" value="0">
+                <input type="hidden" name="KitchenAbvGr" value="1">
+                <input type="hidden" name="KitchenQual" value="TA">
+                <input type="hidden" name="Functional" value="Typ">
+                <input type="hidden" name="FireplaceQu" value="NA">
+                <input type="hidden" name="GarageFinish" value="Unf">
+                <input type="hidden" name="GarageQual" value="TA">
+                <input type="hidden" name="GarageCond" value="TA">
+                <input type="hidden" name="PavedDrive" value="Y">
+                <input type="hidden" name="WoodDeckSF" value="0">
+                <input type="hidden" name="OpenPorchSF" value="0">
+                <input type="hidden" name="EnclosedPorch" value="0">
+                <input type="hidden" name="ScreenPorch" value="0">
+                <input type="hidden" name="PoolQC" value="NA">
+                <input type="hidden" name="Fence" value="NA">
+                <input type="hidden" name="MiscFeature" value="NA">
+                <input type="hidden" name="MiscVal" value="0">
+                <input type="hidden" name="MoSold" value="6">
+                <input type="hidden" name="YrSold" value="2024">
+                <input type="hidden" name="SaleType" value="WD">
+                <input type="hidden" name="SaleCondition" value="Normal">
+
+                <div class="col-12 text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Predict Price</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="mt-4 text-center">
+            <div class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Calculating prediction...</p>
+            </div>
+            
+            <div class="error mt-3"></div>
+            
+            <div id="result" class="mt-3">
+                <h3>Predicted Price: <span id="predictedPrice">-</span></h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const loading = document.querySelector('.loading');
+            const error = document.querySelector('.error');
+            const result = document.getElementById('predictedPrice');
+            
+            // Show loading, hide error
+            loading.classList.add('active');
+            error.classList.remove('active');
+            error.textContent = '';
+            result.textContent = '-';
+
+            try {
+                // Get all form inputs
+                const formData = new FormData(form);
+                
+                // Create the data object with the exact field names
+                const data = {
+                    // Required fields first, with exact names matching the API model
+                    'Id': 1
+                };
+
+                // Add remaining numerical fields
+                const numericalFields = {
+                    'GrLivArea': 1500,
+                    'TotalBsmtSF': 1000,
+                    'OverallQual': 5,
+                    'OverallCond': 5,
+                    'YearBuilt': 1970,
+                    'FullBath': 2,
+                    'HalfBath': 1,
+                    'BedroomAbvGr': 3,
+                    'TotRmsAbvGrd': 6,
+                    'GarageCars': 2,
+                    'GarageArea': 400,
+                    'GarageYrBlt': 1970,
+                    'LotArea': 8000,
+                    'YearRemodAdd': 1970,
+                    'Fireplaces': 0,
+                    'PoolArea': 0,
+                    'BsmtFullBath': 0,
+                    'BsmtHalfBath': 0,
+                    'LotFrontage': 60,
+                    'MasVnrArea': 0,
+                    'BsmtFinSF1': 0,
+                    'BsmtFinSF2': 0,
+                    'BsmtUnfSF': 0,
+                    'LowQualFinSF': 0,
+                    'KitchenAbvGr': 1,
+                    'WoodDeckSF': 0,
+                    'OpenPorchSF': 0,
+                    'EnclosedPorch': 0,
+                    'ScreenPorch': 0,
+                    'MiscVal': 0,
+                    'MoSold': 6,
+                    'YrSold': 2024,
+                    'FirstFlrSF': 1000,
+                    'SecondFlrSF': 500,
+                    'ThreeSsnPorch': 0
+                };
+
+                // Add all numerical fields with their default values
+                for (const [field, defaultValue] of Object.entries(numericalFields)) {
+                    const value = formData.get(field);
+                    data[field] = value ? parseFloat(value) : defaultValue;
+                }
+
+                // Add categorical fields with their default values
+                const categoricalFields = {
+                    'MSSubClass': '60',
+                    'MSZoning': 'RL',
+                    'Street': 'Pave',
+                    'Alley': 'NA',
+                    'LotShape': 'Reg',
+                    'LandContour': 'Lvl',
+                    'Utilities': 'AllPub',
+                    'LotConfig': 'Inside',
+                    'LandSlope': 'Gtl',
+                    'Neighborhood': 'NAmes',
+                    'Condition1': 'Norm',
+                    'Condition2': 'Norm',
+                    'BldgType': '1Fam',
+                    'HouseStyle': '2Story',
+                    'RoofStyle': 'Gable',
+                    'RoofMatl': 'CompShg',
+                    'Exterior1st': 'VinylSd',
+                    'Exterior2nd': 'VinylSd',
+                    'MasVnrType': 'None',
+                    'ExterQual': 'TA',
+                    'ExterCond': 'TA',
+                    'Foundation': 'PConc',
+                    'BsmtQual': 'TA',
+                    'BsmtCond': 'TA',
+                    'BsmtExposure': 'No',
+                    'BsmtFinType1': 'Unf',
+                    'BsmtFinType2': 'Unf',
+                    'Heating': 'GasA',
+                    'HeatingQC': 'TA',
+                    'CentralAir': 'Y',
+                    'Electrical': 'SBrkr',
+                    'KitchenQual': 'TA',
+                    'Functional': 'Typ',
+                    'FireplaceQu': 'NA',
+                    'GarageType': 'Attchd',
+                    'GarageFinish': 'Unf',
+                    'GarageQual': 'TA',
+                    'GarageCond': 'TA',
+                    'PavedDrive': 'Y',
+                    'PoolQC': 'NA',
+                    'Fence': 'NA',
+                    'MiscFeature': 'NA',
+                    'SaleType': 'WD',
+                    'SaleCondition': 'Normal'
+                };
+
+                // Add all categorical fields with their default values
+                for (const [field, defaultValue] of Object.entries(categoricalFields)) {
+                    const value = formData.get(field);
+                    data[field] = value || defaultValue;
+                }
+
+                // Debug logs
+                console.log('Special fields in data:', {
+                    Id: data['Id'],
+                    'FirstFlrSF': data['FirstFlrSF'],
+                    'SecondFlrSF': data['SecondFlrSF'],
+                    'ThreeSsnPorch': data['ThreeSsnPorch']
+                });
+                
+                const response = await fetch('http://localhost:8000/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to get prediction');
+                }
+                
+                const prediction = await response.json();
+                result.textContent = prediction.predicted_price_formatted;
+                
+            } catch (err) {
+                error.textContent = `Error: ${err.message}`;
+                error.classList.add('active');
+                console.error('Error:', err);  // Debug log
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html> 

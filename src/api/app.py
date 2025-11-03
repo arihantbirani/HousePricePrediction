@@ -12,6 +12,23 @@ import numpy as np
 import logging
 import os
 
+# ---------------------------------------------------------------------------
+# Compatibility shim for scikit-learn pipelines saved with older versions.
+# scikit-learn 1.7 removed the private helper `_RemainderColsList` that exists
+# in 1.6 and earlier.  The persisted preprocessor was trained with 1.6.1, so we
+# recreate a minimal stand-in when running with newer versions to keep
+# joblib.load from failing with ``Can't get attribute '_RemainderColsList'``.
+try:
+    from sklearn.compose import _column_transformer
+
+    if not hasattr(_column_transformer, "_RemainderColsList"):
+        class _RemainderColsList(list):
+            """Fallback list implementation for newer scikit-learn releases."""
+
+        _column_transformer._RemainderColsList = _RemainderColsList  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - best-effort compatibility only
+    pass
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,

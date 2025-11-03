@@ -7,6 +7,19 @@ from src.utils.preprocessor import preprocess_input
 import os
 import joblib
 
+# ---------------------------------------------------------------------------
+# Compatibility shim for scikit-learn pipelines trained with <=1.6.
+try:
+    from sklearn.compose import _column_transformer
+
+    if not hasattr(_column_transformer, "_RemainderColsList"):
+        class _RemainderColsList(list):
+            """Fallback list to support loading older ColumnTransformer pickles."""
+
+        _column_transformer._RemainderColsList = _RemainderColsList  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - defensive guard
+    pass
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
